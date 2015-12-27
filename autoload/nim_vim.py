@@ -34,31 +34,31 @@ class NimThread(threading.Thread):
             universal_newlines = True,
             bufsize = 1)
 
-  def postNimCmd(self, msg, async_ = True):
-      self.tasks.put((msg, async_))
-      if not async_:
-          return self.responses.get()
+    def postNimCmd(self, msg, async_ = True):
+        self.tasks.put((msg, async_))
+        if not async_:
+            return self.responses.get()
 
-  def run(self):
-      while True:
-          (msg, async_) = self.tasks.get()
+    def run(self):
+        while True:
+            (msg, async_) = self.tasks.get()
 
-      if msg == "quit":
-          self.nim.terminate()
-          break
+            if msg == "quit":
+                self.nim.terminate()
+                break
 
-      self.nim.stdin.write(msg + "\n")
-      result = ""
+            self.nim.stdin.write(msg + "\n")
+            result = ""
 
-      while True:
-          line = self.nim.stdout.readline()
-          result += line
-          if line == "\n":
-              if not async_:
-                  self.responses.put(result)
-              else:
-                  self.asyncOpComplete(msg, result)
-                  break
+            while True:
+                line = self.nim.stdout.readline()
+                result += line
+                if line == "\n":
+                    if not async_:
+                        self.responses.put(result)
+                    else:
+                        self.asyncOpComplete(msg, result)
+                        break
 
 
 def nimVimEscape(expr):
