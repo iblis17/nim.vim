@@ -50,19 +50,31 @@ fun! s:UpdateNimLog()
 endf
 
 augroup NimVim
-  au!
-  au BufEnter log://nim call s:UpdateNimLog()
-  " au QuitPre * :py nimTerminateAll()
-  au VimLeavePre * :py nimTerminateAll()
+    au!
+    au BufEnter log://nim call s:UpdateNimLog()
+    " au QuitPre * :py nimTerminateAll()
+    if has('python3')
+        au VimLeavePre * :py3 nimTerminateAll()
+    else
+        au VimLeavePre * :py nimTerminateAll()
+    endif
 augroup END
 
 command! NimLog :e log://nim
 
-command! NimTerminateService
-  \ :exe printf("py nimTerminateService('%s')", b:nim_project_root)
+if has('python3')
+    command! NimTerminateService
+        \ :exe printf("py3 nimTerminateService('%s')", b:nim_project_root)
 
-command! NimRestartService
-  \ :exe printf("py nimRestartService('%s')", b:nim_project_root)
+    command! NimRestartService
+        \ :exe printf("py3 nimRestartService('%s')", b:nim_project_root)
+else
+    command! NimTerminateService
+        \ :exe printf("py nimTerminateService('%s')", b:nim_project_root)
+
+    command! NimRestartService
+        \ :exe printf("py nimRestartService('%s')", b:nim_project_root)
+endif
 
 fun! s:CurrentNimFile()
   let save_cur = getpos('.')
@@ -116,7 +128,11 @@ fun! NimExec(op)
   endif
 
   if b:nim_caas_enabled
-    exe printf("py nimExecCmd('%s', '%s', False)", b:nim_project_root, cmd)
+    if has('python3')
+      exe printf("py3 nimExecCmd('%s', '%s', False)", b:nim_project_root, cmd)
+    else
+      exe printf("py nimExecCmd('%s', '%s', False)", b:nim_project_root, cmd)
+    endif
     let output = l:py_res
   else
     let output = system("nim " . cmd)
